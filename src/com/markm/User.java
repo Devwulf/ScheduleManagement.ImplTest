@@ -34,7 +34,7 @@ public class User
     }
 
     @Key(isAutoGen = true)
-    private int userId;
+    private int userId = 0;
 
     @Column(name = "userName")
     private String username;
@@ -44,7 +44,7 @@ public class User
     private String password;
 
     @Column(name = "active")
-    private boolean isActive;
+    private boolean isActive = false;
 
     @Column(name = "createDate")
     private Timestamp dateCreated;
@@ -68,7 +68,7 @@ public class User
             statement.setInt(UserField.UserID.getValue(), user.getUserId());
             statement.setString(UserField.Username.getValue(), user.getUsername());
             statement.setString(UserField.Password.getValue(), user.getPassword());
-            statement.setBoolean(UserField.IsActive.getValue(), user.getIsActive());
+            statement.setBoolean(UserField.IsActive.getValue(), user.isActive());
             statement.setTimestamp(UserField.DateCreated.getValue(), user.getDateCreated());
             statement.setString(UserField.CreatedBy.getValue(), user.getCreatedBy());
             statement.setTimestamp(UserField.DateModified.getValue(), user.getDateModified());
@@ -90,7 +90,7 @@ public class User
                 user.setUserId(result.getInt(UserField.UserID.getValue()));
                 user.setUsername(result.getString(UserField.Username.getValue()));
                 user.setPassword(result.getString(UserField.Password.getValue()));
-                user.setIsActive(result.getBoolean(UserField.IsActive.getValue()));
+                user.setActive(result.getBoolean(UserField.IsActive.getValue()));
                 user.setDateCreated(result.getTimestamp(UserField.DateCreated.getValue()));
                 user.setCreatedBy(result.getString(UserField.CreatedBy.getValue()));
                 user.setDateModified(result.getTimestamp(UserField.DateModified.getValue()));
@@ -139,12 +139,12 @@ public class User
         this.password = password;
     }
 
-    public boolean getIsActive()
+    public boolean isActive()
     {
         return isActive;
     }
 
-    public void setIsActive(boolean active)
+    public void setActive(boolean active)
     {
         isActive = active;
     }

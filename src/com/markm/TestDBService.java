@@ -17,7 +17,7 @@ public class TestDBService
         user.setUserId(0);
         user.setUsername(username);
         user.setPassword(password);
-        user.setIsActive(false);
+        user.setActive(false);
         user.setDateCreated(now);
         user.setCreatedBy(username);
         user.setDateModified(now);

@@ -1,14 +1,26 @@
 package com.markm;
 
-import com.mysql.jdbc.JDBC4Connection;
-
 import java.sql.*;
 
 public class Main
 {
     public static void main(String[] args) throws SQLException, ClassNotFoundException
     {
-        TestDBService.CreateUser("edc", "123456");
+        //TestDBService.CreateUser("edc", "123456");
+
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+        User user = new User();
+        user.setUserId(0);
+        user.setUsername("rfv");
+        user.setPassword("123456");
+        user.setActive(false);
+        user.setDateCreated(now);
+        user.setCreatedBy("rfv");
+        user.setDateModified(now);
+        user.setModifiedBy("rfv");
+
+        DBContext context = new DBContext();
+        User newUser = context.Users.createEntity(user);
 
         /*
         System.out.println("Hello World!");

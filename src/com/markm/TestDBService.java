@@ -4,6 +4,10 @@ import java.sql.*;
 
 public class TestDBService
 {
+    // TODO: Create a system that makes the CRUD calls for all entities generic
+    // TODO: Make all entities be able to override their own CRUD calls if needed
+    // TODO: Grab the table description from db and use it to enforce validation on the objects
+
     public static int CreateUser(String username, String password)
     {
         // TODO: If needed, check if the username already exists
@@ -21,8 +25,9 @@ public class TestDBService
 
         String query = "insert into user " +
                 "values (?, ?, ?, ?, ?, ?, ?, ?)";
-        try (Connection conn = ConnectionManager.getConnection();
-             PreparedStatement statement = conn.prepareStatement(query))
+        try (Connection conn = ConnectionManager.instance()
+                                                .getConnection();
+             PreparedStatement statement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS))
         {
             // Setting the query values
             User.SerializeToDB(user, statement);
@@ -31,14 +36,33 @@ public class TestDBService
 
             ResultSet result = statement.getGeneratedKeys();
             int userId = -1;
-            if (result.next())
-                userId = result.getInt(1);
+            if (result != null && result.next())
+            {
+                int count = result.getMetaData()
+                                  .getColumnCount();
+
+                System.out.println(result.getObject(1));
+                for (int i = 1; i <= count; i++)
+                {
+                    System.out.println(result.getMetaData().getColumnLabel(i));
+                    System.out.println(result.getMetaData().getColumnName(i));
+                    System.out.println(result.getMetaData().getCatalogName(i));
+                    System.out.println(result.getMetaData().getColumnClassName(i));
+                    System.out.println(result.getMetaData().getColumnDisplaySize(i));
+                    System.out.println(result.getMetaData().getColumnType(i));
+                    System.out.println(result.getMetaData().getColumnTypeName(i));
+                    System.out.println(result.getMetaData().getPrecision(i));
+                    System.out.println(result.getMetaData().getScale(i));
+                    System.out.println(result.getMetaData().getSchemaName(i));
+                    System.out.println(result.getMetaData().getTableName(i));
+                }
+            }
 
             System.out.println("User " + username + " created successfully!");
 
             return userId;
         }
-        catch (SQLException | ClassNotFoundException e)
+        catch (SQLException e)
         {
             e.printStackTrace();
             return -1;
@@ -49,7 +73,8 @@ public class TestDBService
     {
         String query = "select * in user " +
                 "where userId = ?";
-        try (Connection conn = ConnectionManager.getConnection();
+        try (Connection conn = ConnectionManager.instance()
+                                                .getConnection();
              PreparedStatement statement = conn.prepareStatement(query))
         {
             statement.setInt(1, userId);
@@ -63,7 +88,7 @@ public class TestDBService
 
             return null;
         }
-        catch (SQLException | ClassNotFoundException e)
+        catch (SQLException e)
         {
             e.printStackTrace();
             return null;
@@ -74,7 +99,8 @@ public class TestDBService
     {
         String query = "select * in user " +
                 "where userName = ?";
-        try (Connection conn = ConnectionManager.getConnection();
+        try (Connection conn = ConnectionManager.instance()
+                                                .getConnection();
              PreparedStatement statement = conn.prepareStatement(query))
         {
             statement.setString(1, username);
@@ -87,7 +113,7 @@ public class TestDBService
 
             return null;
         }
-        catch (SQLException | ClassNotFoundException e)
+        catch (SQLException e)
         {
             e.printStackTrace();
             return null;
@@ -101,7 +127,8 @@ public class TestDBService
         String query = "update user " +
                 "set userId = ?, userName = ?, password = ?, active = ?, createDate = ?, createdBy = ?, lastUpdate = ?, lastUpdateBy = ? " +
                 "where userId = ?";
-        try (Connection conn = ConnectionManager.getConnection();
+        try (Connection conn = ConnectionManager.instance()
+                                                .getConnection();
              PreparedStatement statement = conn.prepareStatement(query))
         {
             User.SerializeToDB(user, statement);
@@ -111,7 +138,7 @@ public class TestDBService
 
             System.out.println("User '" + user.getUsername() + "' updated successfully!");
         }
-        catch (SQLException | ClassNotFoundException e)
+        catch (SQLException e)
         {
             e.printStackTrace();
         }
@@ -120,9 +147,10 @@ public class TestDBService
     public static void DeleteUser(int userId)
     {
         String query = "delete from user " +
-                       "where userId = ?";
-        try(Connection conn = ConnectionManager.getConnection();
-            PreparedStatement statement = conn.prepareStatement(query))
+                "where userId = ?";
+        try (Connection conn = ConnectionManager.instance()
+                                                .getConnection();
+             PreparedStatement statement = conn.prepareStatement(query))
         {
             statement.setInt(1, userId);
 
@@ -130,7 +158,7 @@ public class TestDBService
 
             System.out.println("User with id '" + userId + "' deleted successfully!");
         }
-        catch (SQLException | ClassNotFoundException e)
+        catch (SQLException e)
         {
             e.printStackTrace();
         }
@@ -140,8 +168,9 @@ public class TestDBService
     {
         String query = "delete from user " +
                 "where userName = ?";
-        try(Connection conn = ConnectionManager.getConnection();
-            PreparedStatement statement = conn.prepareStatement(query))
+        try (Connection conn = ConnectionManager.instance()
+                                                .getConnection();
+             PreparedStatement statement = conn.prepareStatement(query))
         {
             statement.setString(1, username);
 
@@ -149,7 +178,7 @@ public class TestDBService
 
             System.out.println("User '" + username + "' deleted successfully!");
         }
-        catch (SQLException | ClassNotFoundException e)
+        catch (SQLException e)
         {
             e.printStackTrace();
         }

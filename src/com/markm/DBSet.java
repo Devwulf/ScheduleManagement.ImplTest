@@ -1,0 +1,151 @@
+package com.markm;
+
+import com.markm.Annotations.*;
+import com.markm.Exceptions.IllegalEntityKeyFormatException;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+
+public class DBSet<TEntity>
+{
+    private Class<TEntity> classType;
+
+    private String tableName;
+
+    private ArrayList<FieldEntry> fields;
+
+    public DBSet(Class<TEntity> clazz)
+    {
+        classType = clazz;
+        fields = new ArrayList<>();
+
+        // TODO: Check if the entity class model matches the entity model in the database
+
+        Table tableAttr = classType.getAnnotation(Table.class);
+        if (tableAttr == null)
+        {
+            // All entity classes need a Table annotation to specify the
+            // table name in the database that this entity goes to
+            throw new IllegalArgumentException("The given entity class needs a Table annotation specifying a table name in the database.");
+        }
+
+        tableName = tableAttr.name();
+
+        boolean hasKey = false;
+        Field[] declaredFields = classType.getDeclaredFields();
+        for (Field field : declaredFields)
+        {
+            Exclude excludeAttr = field.getAnnotation(Exclude.class);
+            if (excludeAttr != null)
+                continue;
+
+            FieldEntry entry = new FieldEntry();
+
+            String fieldName = field.getName();
+            entry.setFieldName(fieldName);
+            entry.setFieldType(field.getType());
+
+            Column columnAttr = field.getAnnotation(Column.class);
+            if (columnAttr != null)
+                entry.setDbName(columnAttr.name());
+            else
+                entry.setDbName(fieldName);
+
+            Key keyAttr = field.getAnnotation(Key.class);
+            if (keyAttr != null)
+            {
+                entry.setPrimaryKey(true);
+                entry.setAutoGen(keyAttr.isAutoGen());
+
+                if (!hasKey)
+                    hasKey = true;
+            }
+            else
+                entry.setPrimaryKey(false);
+
+            ForeignKey foreignKeyAttr = field.getAnnotation(ForeignKey.class);
+            if (foreignKeyAttr != null)
+            {
+                entry.setForeignKey(true);
+                // TODO: Check if the entity referenced here is also a valid entity (has Table attr)
+                entry.setForeignFieldName(foreignKeyAttr.fieldName());
+            }
+            else
+            {
+                entry.setForeignKey(false);
+                entry.setForeignFieldName("");
+            }
+
+            fields.add(entry);
+        }
+
+        if (!hasKey)
+        {
+            // This entity class has no primary key, and is therefore invalid
+            throw new IllegalArgumentException("The given entity class does not have a set primary key.");
+        }
+    }
+
+    public TEntity CreateEntity(TEntity entity)
+    {
+        try
+        {
+            Connection conn = ConnectionManager.instance()
+                                               .getConnection();
+            StringBuilder sb = new StringBuilder("insert into ? values (");
+            for (int i = 0; i < fields.size() - 1; i++)
+            {
+                sb.append("?, ");
+            }
+            sb.append("?)");
+
+            try (PreparedStatement statement = conn.prepareStatement(sb.toString(), Statement.RETURN_GENERATED_KEYS))
+            {
+                statement.setString(1, tableName);
+
+                for (int i = 0; i < fields.size(); i++)
+                {
+                    FieldEntry entry = fields.get(i);
+                    Field field = entity.getClass()
+                                        .getDeclaredField(entry.getFieldName());
+                    field.setAccessible(true);
+                    PreparedStatementExtension.setValue(statement, i + 2, field.get(entity));
+                }
+
+                statement.executeUpdate();
+
+                // Since the entity class model is checked against the db entity model
+                // the column numbers should match up for the primary keys
+                ResultSet result = statement.getGeneratedKeys();
+                int count = result.getMetaData()
+                                  .getColumnCount();
+
+                if (count == 1)
+                {
+                    ArrayList<FieldEntry> entries = fields.stream()
+                                                          .filter(fieldEntry -> fieldEntry.isPrimaryKey() && fieldEntry.isAutoGen())
+                                                          .collect(Collectors.toCollection(ArrayList::new));
+                    if (entries.size() != 1)
+                        throw new IllegalEntityKeyFormatException("The entity class '" + classType.getName() + "' has either multiple auto generated keys or no auto generated keys when the database has one autogenerated key.");
+
+                    Object resultObj = result.getObject(1);
+                    FieldEntry entry = entries.get(0);
+                    Field field = entity.getClass().getDeclaredField(entry.getFieldName());
+                    field.setAccessible(true);
+                    field.set(entity, entry.getFieldType().cast(resultObj));
+                }
+            }
+
+            return null;
+        }
+        catch (SQLException | NoSuchFieldException | IllegalAccessException | IllegalEntityKeyFormatException e)
+        {
+            e.printStackTrace();
+            return null;
+        }
+    }
+}

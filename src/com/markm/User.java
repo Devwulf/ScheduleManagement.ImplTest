@@ -1,7 +1,12 @@
 package com.markm;
 
+import com.markm.Annotations.Key;
+import com.markm.Annotations.Column;
+import com.markm.Annotations.Table;
+
 import java.sql.*;
 
+@Table(name = "user")
 public class User
 {
     public enum UserField
@@ -28,13 +33,26 @@ public class User
         }
     }
 
+    @Key(isAutoGen = true)
     private int userId;
+
+    @Column(name = "userName")
     private String username;
+
+    // This won't have a column annotation because the column name
+    // is already the same as the field name
     private String password;
+
+    @Column(name = "active")
     private boolean isActive;
+
+    @Column(name = "createDate")
     private Timestamp dateCreated;
     private String createdBy;
+
+    @Column(name = "lastUpdate")
     private Timestamp dateModified;
+    @Column(name = "lastUpdateBy")
     private String modifiedBy;
 
     public User()

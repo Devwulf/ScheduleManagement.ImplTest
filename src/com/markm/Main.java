@@ -8,7 +8,7 @@ public class Main
 {
     public static void main(String[] args) throws SQLException, ClassNotFoundException
     {
-        TestDBService.CreateUser("abcdef", "123456");
+        TestDBService.CreateUser("edc", "123456");
 
         /*
         System.out.println("Hello World!");

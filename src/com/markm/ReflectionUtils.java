@@ -61,7 +61,10 @@ public class ReflectionUtils
         Class<?> objClass = objToConvert.getClass();
         Class<?> convertToClass = wrapPrimitive(convertTo);
         if (!isPrimitiveOrWrapper(convertToClass))
-            throw new IllegalArgumentException("Only primitives and their wrapper counterparts can be converted through this method.");
+        {
+            System.out.println("Only primitives and their wrapper counterparts can be converted through this method.");
+            return objToConvert;
+        }
 
         // It seems that converting the object to String first then to
         // the given class can be up to 2x slower, although it's less
@@ -77,13 +80,18 @@ public class ReflectionUtils
             return Long.valueOf(objToConvert.toString());
             //return (Long) ((Integer) objToConvert).longValue();
         }
+        else if (convertToClass.equals(Boolean.class))
+        {
+            return Boolean.valueOf(objToConvert.toString());
+        }
         else if (convertToClass.equals(String.class))
         {
             return objToConvert.toString();
         }
         else
         {
-            throw new UnsupportedOperationException("The conversion from '" + objClass.getName() + "' to '" + convertToClass.getName() + "' is not implemented yet.");
+            System.out.println("The conversion from '" + objClass.getName() + "' to '" + convertToClass.getName() + "' is not implemented yet.");
+            return objToConvert;
         }
     }
 

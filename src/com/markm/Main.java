@@ -1,6 +1,8 @@
 package com.markm;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Main
 {
@@ -20,7 +22,14 @@ public class Main
         user.setModifiedBy("rfv");
 
         DBContext context = new DBContext();
-        User newUser = context.Users.createEntity(user);
+        //User newUser = context.Users.createEntity(user);
+
+        List<NameValuePair> query = new ArrayList<>();
+        query.add(new NameValuePair("userName", "rfv"));
+        query.add(new NameValuePair("password", "123456"));
+
+        List<User> users = context.Users.readEntity(query);
+        System.out.println(users.size());
 
         /*
         System.out.println("Hello World!");

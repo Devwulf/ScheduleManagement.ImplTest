@@ -13,23 +13,26 @@ public class Main
         Timestamp now = new Timestamp(System.currentTimeMillis());
         User user = new User();
         user.setUserId(0);
-        user.setUsername("rfv");
-        user.setPassword("123456");
+        user.setUsername("asdf");
+        user.setPassword("345678");
         user.setActive(false);
         user.setDateCreated(now);
-        user.setCreatedBy("rfv");
+        user.setCreatedBy("asdf");
         user.setDateModified(now);
-        user.setModifiedBy("rfv");
+        user.setModifiedBy("asdf");
 
         DBContext context = new DBContext();
         //User newUser = context.Users.createEntity(user);
 
         List<NameValuePair> query = new ArrayList<>();
-        query.add(new NameValuePair("userName", "rfv"));
-        query.add(new NameValuePair("password", "123456"));
+        query.add(new NameValuePair("userName", "asdf"));
+        query.add(new NameValuePair("password", "345678"));
 
         List<User> users = context.Users.readEntity(query);
-        System.out.println(users.size());
+
+        //context.Users.updateEntity(user, query);
+
+        //context.Users.deleteEntity(query);
 
         /*
         System.out.println("Hello World!");

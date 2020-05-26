@@ -62,7 +62,6 @@ public class ReflectionUtils
         Class<?> convertToClass = wrapPrimitive(convertTo);
         if (!isPrimitiveOrWrapper(convertToClass))
         {
-            System.out.println("Only primitives and their wrapper counterparts can be converted through this method.");
             return objToConvert;
         }
 

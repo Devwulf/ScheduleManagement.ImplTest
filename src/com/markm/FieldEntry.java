@@ -4,7 +4,7 @@ public class FieldEntry
 {
     private String fieldName;
     private Class<?> fieldType;
-    private String dbName;
+    private String columnName;
 
     private boolean isPrimaryKey;
     private boolean isAutoGen;
@@ -32,14 +32,14 @@ public class FieldEntry
         this.fieldType = fieldType;
     }
 
-    public String getDbName()
+    public String getColumnName()
     {
-        return dbName;
+        return columnName;
     }
 
-    public void setDbName(String dbName)
+    public void setColumnName(String columnName)
     {
-        this.dbName = dbName;
+        this.columnName = columnName;
     }
 
     public boolean isPrimaryKey()
